@@ -88,7 +88,7 @@ class Wallet:
             else:
                 self._indexedDB = Blockchain.Default()
 
-            self._current_height = 0
+            self._current_height = Blockchain.Default().Height
 
             self.BuildDatabase()
 
@@ -100,8 +100,7 @@ class Wallet:
             self.SaveStoredData('MasterKey', mk)
             self.SaveStoredData('MigrationState', '1')
 
-            self.SaveStoredData('Height',
-                                self._current_height.to_bytes(4, 'little'))
+            self.SaveStoredData('Height',self._current_height)
 
         else:
             self.BuildDatabase()
