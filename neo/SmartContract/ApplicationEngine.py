@@ -286,16 +286,15 @@ class ApplicationEngine(ExecutionEngine):
 
         if opcode <= PUSH16:
             return 0
-
-        if opcode == NOP:
+        elif opcode == NOP:
             return 0
-        elif opcode == APPCALL or opcode == TAILCALL:
+        elif opcode in [APPCALL, TAILCALL]:
             return 10
         elif opcode == SYSCALL:
             return self.GetPriceForSysCall()
         elif opcode == SHA1 or opcode == SHA256:
             return 10
-        elif opcode == HASH160 or opcode == HASH256:
+        elif opcode in [HASH160, HASH256]:
             return 20
         elif opcode in [CHECKSIG, VERIFY]:
             return 100

@@ -86,9 +86,9 @@ class Block(BlockBase, InventoryMixin):
             if type(tx) is str:
                 is_trimmed = True
         except Exception as e:
-            print("Could not get full transactions %s  " % e)
-            import pdb
-            pdb.set_trace()
+            # print("Could not get full transactions %s  " % e)
+            # import pdb
+            # pdb.set_trace()
             pass
 
         if not is_trimmed:
@@ -244,8 +244,8 @@ class Block(BlockBase, InventoryMixin):
                 raise Exception("Could not find transaction!\n Are you running code against a valid Blockchain instance?\n Tests that accesses transactions or size of a block but inherit from NeoTestCase instead of BlockchainFixtureTestCase will not work.")
             tx_list.append(tx)
 
-        if len(tx_list) < 1:
-            raise Exception("Invalid block, no transactions found")
+#        if len(tx_list) < 1:
+#            raise Exception("Invalid block, no transactions found")
 
         block.Transactions = tx_list
 

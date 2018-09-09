@@ -311,9 +311,13 @@ class PromptInterface:
             else:
                 print("Please specify a path")
 
+    def wallet_loop_error(self, err):
+        print("Wallet loop error %s " % err)
+
     def start_wallet_loop(self):
         self._walletdb_loop = task.LoopingCall(self.Wallet.ProcessBlocks)
-        self._walletdb_loop.start(1)
+        loop_deferred = self._walletdb_loop.start(1)
+        loop_deferred.addErrback(self.wallet_loop_error)
 
     def stop_wallet_loop(self):
         self._walletdb_loop.stop()
@@ -961,9 +965,13 @@ class PromptInterface:
             print(
                 "Cannot configure %s try 'config sc-events on|off', 'config debug on|off', 'config sc-debug-notify on|off', 'config vm-log on|off', or 'config maxpeers {num_peers}'" % what)
 
+    def on_looperror(self, err):
+        print("On DB loop error! %s " % err)
+
     def run(self):
         dbloop = task.LoopingCall(Blockchain.Default().PersistBlocks)
-        dbloop.start(.1)
+        dbloop_deferred = dbloop.start(.1)
+        dbloop_deferred.addErrback(self.on_looperror)
 
         tokens = [("class:neo", 'NEO'), ("class:default", ' cli. Type '),
                   ("class:command", '\'help\' '), ("class:default", 'to get started')]

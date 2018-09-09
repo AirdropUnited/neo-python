@@ -123,21 +123,24 @@ class NeoNode(Protocol):
             self.SendVersion()
 
     def connectionLost(self, reason=None):
-        """Callback handler from twisted when a connection was lost."""
-        if self.block_loop:
-            self.block_loop.stop()
-            self.block_loop = None
-        if self.peer_loop:
-            self.peer_loop.stop()
-            self.peer_loop = None
+        try:
+            """Callback handler from twisted when a connection was lost."""
+            if self.block_loop:
+                self.block_loop.stop()
+                self.block_loop = None
+            if self.peer_loop:
+                self.peer_loop.stop()
+                self.peer_loop = None
 
-        self.ReleaseBlockRequests()
-        self.leader.RemoveConnectedPeer(self)
+            self.ReleaseBlockRequests()
+            self.leader.RemoveConnectedPeer(self)
 
-        if reason and reason.check(twisted_error.ConnectionDone):
-            self.Log("client {} disconnected normally with reason:{}".format(self.remote_nodeid, reason))
-        else:
-            self.Log("%s disconnected %s" % (self.remote_nodeid, reason))
+            if reason and reason.check(twisted_error.ConnectionDone):
+                self.Log("client {} disconnected normally with reason:{}".format(self.remote_nodeid, reason))
+            else:
+                self.Log("%s disconnected %s" % (self.remote_nodeid, reason))
+        except Exception as e:
+            print("Error with connection lost %s " % e)
 
     def ReleaseBlockRequests(self):
         bcr = BC.Default().BlockRequests
@@ -154,9 +157,12 @@ class NeoNode(Protocol):
 
     def dataReceived(self, data):
         """ Called from Twisted whenever data is received. """
-        self.bytes_in += (len(data))
-        self.buffer_in = self.buffer_in + data
-        self.CheckDataReceived()
+        try:
+            self.bytes_in += (len(data))
+            self.buffer_in = self.buffer_in + data
+            self.CheckDataReceived()
+        except Exception as e:
+            print("Error on data received %s " % e)
 
     def CheckDataReceived(self):
         """Tries to extract a Message from the data buffer and process it."""
@@ -263,16 +269,21 @@ class NeoNode(Protocol):
         else:
             self.Log("Command not implemented {} {} ".format(m.Command, self.endpoint))
 
+    def OnLoopError(self, err):
+        print("On neo Node loop error %s " % err)
+
     def ProtocolReady(self):
         self.RequestPeerInfo()
         self.AskForMoreHeaders()
 
         self.block_loop = task.LoopingCall(self.AskForMoreBlocks)
-        self.block_loop.start(self.sync_mode)
+        block_loop_deferred = self.block_loop.start(self.sync_mode)
+        block_loop_deferred.addErrback(self.OnLoopError)
 
         # ask every 3 minutes for new peers
         self.peer_loop = task.LoopingCall(self.RequestPeerInfo)
-        self.peer_loop.start(120, now=False)
+        peer_loop_deferred = self.peer_loop.start(120, now=False)
+        peer_loop_deferred.addErrback(self.OnLoopError)
 
     def AskForMoreHeaders(self):
         # self.Log("asking for more headers...")
@@ -444,7 +455,10 @@ class NeoNode(Protocol):
         ba = Helper.ToArray(message)
         ba2 = binascii.unhexlify(ba)
         self.bytes_out += len(ba2)
-        self.transport.write(ba2)
+        try:
+            self.transport.write(ba2)
+        except Exception as e:
+            print("Could not write transport %s " % e)
 
     def HandleBlockHeadersReceived(self, inventory):
         """

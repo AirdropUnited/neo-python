@@ -252,57 +252,57 @@ class StateReader(InteropService):
 
     def ExecutionCompleted(self, engine, success, error=None):
 
-        height = Blockchain.Default().Height + 1
-        tx_hash = None
-
-        if engine.ScriptContainer:
-            tx_hash = engine.ScriptContainer.Hash
-
-        if not tx_hash:
-            tx_hash = UInt256(data=bytearray(32))
-
-        entry_script = None
-        try:
-            # get the first script that was executed
-            # this is usually the script that sets up the script to be executed
-            entry_script = UInt160(data=engine.ExecutedScriptHashes[0])
-
-            # ExecutedScriptHashes[1] will usually be the first contract executed
-            if len(engine.ExecutedScriptHashes) > 1:
-                entry_script = UInt160(data=engine.ExecutedScriptHashes[1])
-        except Exception as e:
-            logger.error("Could not get entry script: %s " % e)
-
-        payload = ContractParameter(ContractParameterType.Array, value=[])
-        for item in engine.EvaluationStack.Items:
-            payload.Value.append(ContractParameter.ToParameter(item))
-
-        if success:
-
-            # dispatch all notify events, along with the success of the contract execution
-            for notify_event_args in self.notifications:
-                self.events_to_dispatch.append(NotifyEvent(SmartContractEvent.RUNTIME_NOTIFY, notify_event_args.State,
-                                                           notify_event_args.ScriptHash, height, tx_hash,
-                                                           success, engine.testMode))
-
-            if engine.Trigger == Application:
-                self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.EXECUTION_SUCCESS, payload, entry_script,
-                                                                  height, tx_hash, success, engine.testMode))
-            else:
-                self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.VERIFICATION_SUCCESS, payload, entry_script,
-                                                                  height, tx_hash, success, engine.testMode))
-
-        else:
-            payload.Value.append(ContractParameter(ContractParameterType.String, error))
-            payload.Value.append(ContractParameter(ContractParameterType.String, engine._VMState))
-            if engine.Trigger == Application:
-                self.events_to_dispatch.append(
-                    SmartContractEvent(SmartContractEvent.EXECUTION_FAIL, payload,
-                                       entry_script, height, tx_hash, success, engine.testMode))
-            else:
-                self.events_to_dispatch.append(
-                    SmartContractEvent(SmartContractEvent.VERIFICATION_FAIL, payload,
-                                       entry_script, height, tx_hash, success, engine.testMode))
+        # height = Blockchain.Default().Height + 1
+        # tx_hash = None
+        #
+        # if engine.ScriptContainer:
+        #     tx_hash = engine.ScriptContainer.Hash
+        #
+        # if not tx_hash:
+        #     tx_hash = UInt256(data=bytearray(32))
+        #
+        # entry_script = None
+        # try:
+        #     # get the first script that was executed
+        #     # this is usually the script that sets up the script to be executed
+        #     entry_script = UInt160(data=engine.ExecutedScriptHashes[0])
+        #
+        #     # ExecutedScriptHashes[1] will usually be the first contract executed
+        #     if len(engine.ExecutedScriptHashes) > 1:
+        #         entry_script = UInt160(data=engine.ExecutedScriptHashes[1])
+        # except Exception as e:
+        #     logger.error("Could not get entry script: %s " % e)
+        #
+        # payload = ContractParameter(ContractParameterType.Array, value=[])
+        # for item in engine.EvaluationStack.Items:
+        #     payload.Value.append(ContractParameter.ToParameter(item))
+        #
+        # if success:
+        #
+        #     # dispatch all notify events, along with the success of the contract execution
+        #     for notify_event_args in self.notifications:
+        #         self.events_to_dispatch.append(NotifyEvent(SmartContractEvent.RUNTIME_NOTIFY, notify_event_args.State,
+        #                                                    notify_event_args.ScriptHash, height, tx_hash,
+        #                                                    success, engine.testMode))
+        #
+        #     if engine.Trigger == Application:
+        #         self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.EXECUTION_SUCCESS, payload, entry_script,
+        #                                                           height, tx_hash, success, engine.testMode))
+        #     else:
+        #         self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.VERIFICATION_SUCCESS, payload, entry_script,
+        #                                                           height, tx_hash, success, engine.testMode))
+        #
+        # else:
+        #     payload.Value.append(ContractParameter(ContractParameterType.String, error))
+        #     payload.Value.append(ContractParameter(ContractParameterType.String, engine._VMState))
+        #     if engine.Trigger == Application:
+        #         self.events_to_dispatch.append(
+        #             SmartContractEvent(SmartContractEvent.EXECUTION_FAIL, payload,
+        #                                entry_script, height, tx_hash, success, engine.testMode))
+        #     else:
+        #         self.events_to_dispatch.append(
+        #             SmartContractEvent(SmartContractEvent.VERIFICATION_FAIL, payload,
+        #                                entry_script, height, tx_hash, success, engine.testMode))
 
         self.notifications = []
 
@@ -349,45 +349,45 @@ class StateReader(InteropService):
 
         state = engine.EvaluationStack.Pop()
 
-        payload = ContractParameter.ToParameter(state)
-
-        args = NotifyEventArgs(
-            engine.ScriptContainer,
-            UInt160(data=engine.CurrentContext.ScriptHash()),
-            payload
-        )
-
-        self.notifications.append(args)
-
-        if settings.emit_notify_events_on_sc_execution_error:
-            # emit Notify events even if the SC execution might fail.
-            tx_hash = engine.ScriptContainer.Hash
-            height = Blockchain.Default().Height + 1
-            success = None
-            self.events_to_dispatch.append(NotifyEvent(SmartContractEvent.RUNTIME_NOTIFY, payload,
-                                                       args.ScriptHash, height, tx_hash,
-                                                       success, engine.testMode))
+        # payload = ContractParameter.ToParameter(state)
+        #
+        # args = NotifyEventArgs(
+        #     engine.ScriptContainer,
+        #     UInt160(data=engine.CurrentContext.ScriptHash()),
+        #     payload
+        # )
+        #
+        # self.notifications.append(args)
+        #
+        # if settings.emit_notify_events_on_sc_execution_error:
+        #     # emit Notify events even if the SC execution might fail.
+        #     tx_hash = engine.ScriptContainer.Hash
+        #     height = Blockchain.Default().Height + 1
+        #     success = None
+        #     self.events_to_dispatch.append(NotifyEvent(SmartContractEvent.RUNTIME_NOTIFY, payload,
+        #                                                args.ScriptHash, height, tx_hash,
+        #                                                success, engine.testMode))
 
         return True
 
     def Runtime_Log(self, engine):
         message = engine.EvaluationStack.Pop().GetString()
 
-        hash = UInt160(data=engine.CurrentContext.ScriptHash())
-
-        tx_hash = None
-
-        if engine.ScriptContainer:
-            tx_hash = engine.ScriptContainer.Hash
-        engine.write_log(str(message))
-
-        # Build and emit smart contract event
-        self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.RUNTIME_LOG,
-                                                          ContractParameter(ContractParameterType.String, value=message),
-                                                          hash,
-                                                          Blockchain.Default().Height + 1,
-                                                          tx_hash,
-                                                          test_mode=engine.testMode))
+        # hash = UInt160(data=engine.CurrentContext.ScriptHash())
+        #
+        # tx_hash = None
+        #
+        # if engine.ScriptContainer:
+        #     tx_hash = engine.ScriptContainer.Hash
+        # engine.write_log(str(message))
+        #
+        # # Build and emit smart contract event
+        # self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.RUNTIME_LOG,
+        #                                                   ContractParameter(ContractParameterType.String, value=message),
+        #                                                   hash,
+        #                                                   Blockchain.Default().Height + 1,
+        #                                                   tx_hash,
+        #                                                   test_mode=engine.testMode))
 
         return True
 
@@ -994,8 +994,8 @@ class StateReader(InteropService):
         if engine.ScriptContainer:
             tx_hash = engine.ScriptContainer.Hash
 
-        self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.STORAGE_GET, ContractParameter(ContractParameterType.String, value='%s -> %s' % (keystr, valStr)),
-                                                          context.ScriptHash, Blockchain.Default().Height + 1, tx_hash, test_mode=engine.testMode))
+        # self.events_to_dispatch.append(SmartContractEvent(SmartContractEvent.STORAGE_GET, ContractParameter(ContractParameterType.String, value='%s -> %s' % (keystr, valStr)),
+        #                                                   context.ScriptHash, Blockchain.Default().Height + 1, tx_hash, test_mode=engine.testMode))
 
         return True
 
